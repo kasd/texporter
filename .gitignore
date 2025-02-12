@@ -23,6 +23,7 @@ go.work.sum
 .env
 
 build/*
+dist/*
 __*
 .vscode
 headers
