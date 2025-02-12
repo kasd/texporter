@@ -14,9 +14,6 @@
 
 package main
 
-// #include <time.h>
-// #include "flags.h"
-import "C"
 import (
 	"encoding/binary"
 	"net/netip"
@@ -24,6 +21,13 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	// Flags for IP addresses
+	FLAG_NONE  = 0x0
+	FLAG_SRC_I = 0x1
+	FLAG_DST_I = 0x2
 )
 
 var (
@@ -88,14 +92,14 @@ func hadnleIP4PairAgg(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prom
 
 	defer wg.Done()
 
-	if key.Flags&C.FLAG_SRC_I == C.FLAG_SRC_I {
+	if key.Flags&FLAG_SRC_I == FLAG_SRC_I {
 		ipSrc = IpRanges[key.Addrs.Src].Name
 	} else {
 		binary.LittleEndian.PutUint32(src[:], key.Addrs.Src)
 		ipSrc = netip.AddrFrom4(src).String()
 	}
 
-	if key.Flags&C.FLAG_DST_I == C.FLAG_DST_I {
+	if key.Flags&FLAG_DST_I == FLAG_DST_I {
 		ipDst = IpRanges[key.Addrs.Dst].Name
 	} else {
 		binary.LittleEndian.PutUint32(dst[:], key.Addrs.Dst)
@@ -136,14 +140,14 @@ func hadnleIP6PairAgg(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prom
 	copy(src[:], key.Addrs.Src.In6U.U6Addr8[:])
 	copy(dst[:], key.Addrs.Dst.In6U.U6Addr8[:])
 
-	if key.Flags&C.FLAG_SRC_I == C.FLAG_SRC_I {
+	if key.Flags&FLAG_SRC_I == FLAG_SRC_I {
 		srcIdx := binary.LittleEndian.Uint32(key.Addrs.Src.In6U.U6Addr8[0:4])
 		ipSrc = IpRanges[srcIdx].Name
 	} else {
 		ipSrc = netip.AddrFrom16(src).String()
 	}
 
-	if key.Flags&C.FLAG_DST_I == C.FLAG_DST_I {
+	if key.Flags&FLAG_DST_I == FLAG_DST_I {
 		dstIdx := binary.LittleEndian.Uint32(key.Addrs.Src.In6U.U6Addr8[0:4])
 		ipDst = IpRanges[dstIdx].Name
 	} else {
@@ -209,8 +213,6 @@ func cleanUpStaleMetrics() {
 		keyAgg6 cntIp6PairAddrValue
 		key6    cntIp6PairAddrKey
 		val6    cntIp6PairValue
-
-		ts C.struct_timespec
 	)
 
 	mu.Lock()
@@ -218,8 +220,7 @@ func cleanUpStaleMetrics() {
 
 	logrus.Info("Cleanup stale metrics: start")
 
-	C.clock_gettime(C.CLOCK_MONOTONIC_COARSE, &ts)
-	cutoff := uint64(ts.tv_sec*1e9+ts.tv_nsec) - 3e11 // 5 minutes
+	cutoff := uint64(nanotime()) - 3e11 // 5 minutes
 
 	// Cleanup ip4 metrics
 	iter := objs.Ip4Packets.Iterate()
