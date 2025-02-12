@@ -1,6 +1,6 @@
 # texporter
 
-texporter is a simple, easy-to-setup, low-overhead eBPF traffic monitor exporter for Prometheus.
+texporter is a lightweight, high-performance eBPF-based network traffic exporter for Prometheus.
 
 [![GitHub license](https://img.shields.io/github/license/kasd/texporter)](https://github.com/kasd/texporter/blob/main/LICENSE)
 
