@@ -1,0 +1,17 @@
+# Preparition stage
+FROM golang:1.23-alpine3.21 AS builder
+
+RUN apk add libbpf-dev clang llvm make linux-headers git
+
+FROM builder AS build-linux
+
+WORKDIR /build
+COPY ./ /build/
+RUN make
+
+# Final Stage
+FROM scratch AS final
+
+COPY --from=build-linux /build/build/texporter /app/texporter
+
+ENTRYPOINT [ "/app/texporter" ]
