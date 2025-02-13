@@ -7,6 +7,11 @@ on:
 
 jobs:
   release:
+    defaults:
+      run:
+        shell: bash
+        working-directory: /texporter
+        
     runs-on: ubuntu-latest
     container:
       image: golang:1.23-alpine3.21
