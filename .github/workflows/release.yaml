@@ -32,6 +32,6 @@ jobs:
           distribution: goreleaser
           version: '~> v2'
           args: release --clean
-          workdir: ${{ github.workspace }}
+          workdir: /__w/texporter/texporter
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
