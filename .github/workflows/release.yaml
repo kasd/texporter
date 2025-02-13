@@ -9,7 +9,7 @@ jobs:
   release:
     defaults:
       run:
-        shell: bash
+        shell: sh
         working-directory: ${{ github.workspace }}
         
     runs-on: ubuntu-latest
