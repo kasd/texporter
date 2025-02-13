@@ -16,14 +16,53 @@ For example, you can use it to monitor traffic to services like YouTube, corpora
 
 A recent Linux kernel is required to run `texporter`. Many features rely on specific kernel functionalities and have minimum kernel version requirements. However, relying solely on kernel version numbers may not be sufficient for certain operating system distributions, as maintainers for distributions such as RHEL, Ubuntu, and SUSE often backport selected features to older kernel releases (retaining the older kernel version))
 
-Minimum version to support TCX is 6.6.
+Minimum version to support TCX is ***6.6***.
 
 - [Supported XDP Drivers](https://github.com/xdp-project/xdp-project/blob/master/areas/drivers/README.org)
 - [BCC Kernel Compatibility](https://github.com/iovisor/bcc/blob/master/docs/kernel-versions.md#xdp)
 
-## Installation
+### Installation and Usage
 
-To install `texporter`, follow these steps:
+#### Installation
+
+For **Debian**, **RedHat**, and **Alpine**-based distributions, you can download a pre-built package from the [Releases](https://github.com/kasd/texporter/releases) page and install it using your package manager:
+
+- **Debian-based (Ubuntu, Debian, etc.):**
+  ```sh
+  dpkg -i texporter_VERSION.deb
+  ```
+
+- **RedHat-based (RHEL, CentOS, Fedora, etc.):**
+  ```sh
+  rpm -i texporter-VERSION.rpm
+  ```
+
+- **Alpine Linux:**
+  ```sh
+  apk add --allow-untrusted texporter-VERSION.apk
+  ```
+
+#### Running the Service
+
+After installation, enable and start the service for your network interface:
+
+```sh
+systemctl enable texporter@[interface_name]
+systemctl start texporter@[interface_name]
+```
+
+Example for `eth0`:
+
+```sh
+systemctl enable texporter@eth0
+systemctl start texporter@eth0
+```
+
+This will ensure `texporter` starts automatically on boot and monitors the specified network interface.
+
+## Building from source
+
+To build `texporter`, follow these steps:
 
 ```sh
 # Install build deps
@@ -35,7 +74,7 @@ git clone https://github.com/kasd/texporter.git
 cd texporter
 
 # Build the project
-make build
+make
 
 # The binary will be located in the ./build directory
 ```
