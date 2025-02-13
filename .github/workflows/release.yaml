@@ -10,7 +10,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: /texporter
+        working-directory: ${{ github.workspace }}
         
     runs-on: ubuntu-latest
     container:
