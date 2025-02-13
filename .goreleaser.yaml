@@ -7,6 +7,10 @@ checksum:
 snapshot:
   name_template: "{{ .Tag }}-snap"
 
+before:
+  hooks:
+    - go generate
+
 builds:
   - flags:
       - -trimpath
