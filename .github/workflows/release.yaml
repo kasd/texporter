@@ -1,0 +1,26 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: self-hosted
+    container: golang:1.23-alpine3.21
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          apk add --no-cache git curl bash make libbpf-dev clang llvm linux-headers
+          go install github.com/goreleaser/goreleaser/v2@latest
+
+      - name: Run GoReleaser
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          goreleaser release --clean

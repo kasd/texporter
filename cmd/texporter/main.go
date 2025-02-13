@@ -115,7 +115,14 @@ func main() {
 	// Start HTTP server for Prometheus metrics
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		logrus.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", flags.Port), nil))
+
+		bindAddress := flags.BindAddress
+
+		if bindAddress == "" {
+			bindAddress = fmt.Sprintf(":%s", flags.Port)
+		}
+
+		logrus.Fatal(http.ListenAndServe(bindAddress, nil))
 	}()
 
 	// Start capturing traffic

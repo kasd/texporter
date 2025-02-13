@@ -1,0 +1,70 @@
+changelog:
+  sort: asc
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  name_template: "{{ .Tag }}-snap"
+
+builds:
+  - flags:
+      - -trimpath
+    env:
+      - CGO_ENABLED=0
+      - GO111MODULE=on
+    ldflags: |
+      -s -w -extldflags '-static'
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm
+      - arm64
+      - mips
+    goarm:
+      - 6
+      - 7
+    main: ./cmd/texporter
+
+archives:
+  - name_template: >-
+      {{- .ProjectName }}_
+      {{- .Version }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end -}}
+    files:
+      - README.md
+      - LICENSE
+
+nfpms:
+  - package_name: texpoter
+    vendor: Anton Kulpinov
+    maintainer: Anton Kulpinov <a.kulpinov@gmail.com>
+    description: A lightweight, high-performance eBPF-based network traffic exporter for Prometheus
+    license: Apache-2.0
+    homepage: https://github.com/kasd/texporter
+    contents:
+    - src: scripts/config.json
+      dst: /etc/texporter/config.json
+      type: config
+    - src: scripts/texporter@.service
+      dst: /etc/systemd/system/texporter@.service
+      type: config
+    formats:
+      - rpm
+      - deb
+      - archlinux
+      - termux.deb
+      - apk
+      - ipk
+    bindir: /usr/bin
+    section: net
+    priority: optional
+    deb:
+      lintian_overrides:
+        - statically-linked-binary
+        - changelog-file-missing-in-native-package
