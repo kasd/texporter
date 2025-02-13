@@ -2,7 +2,7 @@
 
 texporter is a lightweight, high-performance eBPF-based network traffic exporter for Prometheus.
 
-[![GitHub license](https://img.shields.io/github/license/kasd/texporter)](https://github.com/kasd/texporter/blob/main/LICENSE)
+![GitHub Release](https://img.shields.io/github/v/release/kasd/texporter) [![GitHub license](https://img.shields.io/github/license/kasd/texporter)](https://github.com/kasd/texporter/blob/main/LICENSE)
 
 ## Introduction
 
@@ -15,6 +15,8 @@ For example, you can use it to monitor traffic to services like YouTube, corpora
 ## Requirements
 
 A recent Linux kernel is required to run `texporter`. Many features rely on specific kernel functionalities and have minimum kernel version requirements. However, relying solely on kernel version numbers may not be sufficient for certain operating system distributions, as maintainers for distributions such as RHEL, Ubuntu, and SUSE often backport selected features to older kernel releases (retaining the older kernel version))
+
+Minimum version to support TCX is 6.6.
 
 - [Supported XDP Drivers](https://github.com/xdp-project/xdp-project/blob/master/areas/drivers/README.org)
 - [BCC Kernel Compatibility](https://github.com/iovisor/bcc/blob/master/docs/kernel-versions.md#xdp)
