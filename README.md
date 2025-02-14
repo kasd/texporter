@@ -84,10 +84,10 @@ make
 Run `texporter` with the desired options:
 
 ```sh
-sudo ./build/texporter --interface-name eth0 --log-level error --ip-ranges-filename config.json --port 2112
+sudo ./build/texporter --interface eth0 --log-level error --ip-ranges-filename config.json --port 2112
 ```
 
-- `--interface-name`: Specifies the network interface to attach to (e.g., `eth0`).
+- `--interface`: Specifies the network interface to attach to (e.g., `eth0`).
 - `--ip-ranges-filename`: Path to a JSON file containing IP ranges.
 - `--log-level`: Sets the logging level (`trace`, `debug`, `info`, `warning`, `error`, `fatal`, `panic`). ([pkg.go.dev](https://pkg.go.dev/github.com/sirupsen/logrus))
 - `--port`: Specifies the port for the metrics endpoint (default is `2112`).
@@ -140,7 +140,7 @@ docker build -t texporter:latest .
 Run the Docker container:
 
 ```sh
-docker run --rm --privileged -p 2112:2112 -v /path/to/config.json:/config.json texporter:latest --interface-name eth0 --ip-ranges-filename /config.json --log-level error --port 2112
+docker run --rm --privileged -p 2112:2112 -v /path/to/config.json:/config.json texporter:latest --interface eth0 --ip-ranges-filename /config.json --log-level error --port 2112
 ```
 
 ## Prometheus metrics
