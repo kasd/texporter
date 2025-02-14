@@ -42,12 +42,12 @@ type trafficmonCollector struct {
 
 func newTrafficmonCollector() *trafficmonCollector {
 	return &trafficmonCollector{
-		trafficMonCapturedBytes: prometheus.NewDesc("trafficmon_captured_bytes",
-			"The total number of bytes captured by trafficmon exporter",
+		trafficMonCapturedBytes: prometheus.NewDesc("texporter_captured_bytes_total",
+			"The total number of bytes captured by texporter",
 			[]string{"src", "dst"}, nil,
 		),
-		trafficMon6CapturedBytes: prometheus.NewDesc("trafficmon6_captured_bytes",
-			"The total number of bytes captured by trafficmon exporter IPv6",
+		trafficMon6CapturedBytes: prometheus.NewDesc("texporter_captured_ipv6_bytes_total",
+			"The total number of bytes captured by texporter IPv6",
 			[]string{"src", "dst"}, nil,
 		),
 	}

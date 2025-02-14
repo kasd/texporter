@@ -287,10 +287,10 @@ promhttp_metric_handler_requests_in_flight 1
 promhttp_metric_handler_requests_total{code="200"} 2
 promhttp_metric_handler_requests_total{code="500"} 0
 promhttp_metric_handler_requests_total{code="503"} 0
-# HELP trafficmon_captured_bytes The total number of bytes captured by trafficmon exporter
-# TYPE trafficmon_captured_bytes counter
-trafficmon_captured_bytes{dst="local",src="local"} 40460
-trafficmon_captured_bytes{dst="youtube",src="local"} 504
+# HELP texporter_captured_bytes_total The total number of bytes captured by texporter
+# TYPE texporter_captured_bytes_total counter
+texporter_captured_bytes_total{dst="local",src="local"} 40460
+texporter_captured_bytes_total{dst="youtube",src="local"} 504
 ```
 
 ## Grafana
