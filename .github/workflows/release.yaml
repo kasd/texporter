@@ -16,17 +16,18 @@ jobs:
     container:
       image: golang:1.23-alpine3.21
     steps:
-      - 
-        name: Install deps
+      - name: Install deps
         run: |
           apk add --no-cache libbpf-dev clang llvm make linux-headers git 
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
-      -
-        name: Run GoReleaser
+          fetch-depth: 0
+      - name: Debug Git Repo
+        run: |
+          git status
+          git rev-parse --is-inside-work-tree
+      - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
