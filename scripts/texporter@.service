@@ -5,7 +5,7 @@ After=network.target
 [Service]
 ExecStartPre=/bin/sh -c '[ -f /etc/default/texporter_%i ] || touch /etc/default/texporter_%i'
 EnvironmentFile=-/etc/default/texporter_%i
-ExecStart=/usr/bin/texporter ${FLAGS} --interface %i --bind-address=${LISTEN} --ip-ranges-filename /etc/texporter/config.json
+ExecStart=/usr/bin/texporter ${FLAGS} --skip-dns --interface %i --bind-address=${LISTEN} --ip-ranges-filename /etc/texporter/config.json
 Restart=on-failure
 
 [Install]
