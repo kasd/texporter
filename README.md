@@ -60,6 +60,10 @@ systemctl start texporter@eth0
 
 This will ensure `texporter` starts automatically on boot and monitors the specified network interface.
 
+## EXPERMIMENTAL FEATURES ###
+
+* Reverse DNS lookups on metrics collection.
+
 ## Building from source
 
 To build `texporter`, follow these steps:
