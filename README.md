@@ -91,6 +91,7 @@ sudo ./build/texporter --interface eth0 --log-level error --ip-ranges-filename c
 - `--ip-ranges-filename`: Path to a JSON file containing IP ranges.
 - `--log-level`: Sets the logging level (`trace`, `debug`, `info`, `warning`, `error`, `fatal`, `panic`). ([pkg.go.dev](https://pkg.go.dev/github.com/sirupsen/logrus))
 - `--port`: Specifies the port for the metrics endpoint (default is `2112`).
+- `--skip-dns`: Skip reverse DNS lookups 
 
 Example `config.json` file:
 
