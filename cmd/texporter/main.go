@@ -29,11 +29,12 @@ import (
 	"github.com/cilium/ebpf/rlimit"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rs/dnscache"
 	"github.com/sirupsen/logrus"
 )
 
 var (
-	flags *Flags
+	resolver *dnscache.Resolver
 )
 
 func init() {
@@ -104,6 +105,18 @@ func main() {
 		log.Fatalf("Attaching TCX egress: %s", err)
 	}
 	defer eLink.Close()
+
+	if !flags.SkipDNS {
+		resolver = &dnscache.Resolver{}
+
+		go func() {
+			t := time.NewTicker(5 * time.Minute)
+			defer t.Stop()
+			for range t.C {
+				resolver.Refresh(false)
+			}
+		}()
+	}
 
 	logrus.Info("Start counting packets..")
 

@@ -15,8 +15,8 @@
 package main
 
 import (
+	"context"
 	"encoding/binary"
-	"net"
 	"net/netip"
 	"sync"
 
@@ -92,7 +92,7 @@ func handleIp4Pair(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prometh
 	ipSrc = netip.AddrFrom4(src).String()
 
 	if !flags.SkipDNS {
-		addrs, err := net.LookupAddr(ipSrc)
+		addrs, err := resolver.LookupAddr(context.Background(), ipSrc)
 		if err != nil {
 			logrus.Infof("Failed to lookup address %s: %s", ipSrc, err)
 		} else {
@@ -103,7 +103,7 @@ func handleIp4Pair(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prometh
 	ipDst = netip.AddrFrom4(dst).String()
 
 	if !flags.SkipDNS {
-		addrs, err := net.LookupAddr(ipDst)
+		addrs, err := resolver.LookupAddr(context.Background(), ipDst)
 		if err != nil {
 			logrus.Infof("Failed to lookup address %s: %s", ipDst, err)
 		} else {
@@ -138,7 +138,7 @@ func hadnleIP4PairAgg(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prom
 		ipSrc = netip.AddrFrom4(src).String()
 
 		if !flags.SkipDNS {
-			addrs, err := net.LookupAddr(ipSrc)
+			addrs, err := resolver.LookupAddr(context.Background(), ipSrc)
 			if err != nil {
 				logrus.Infof("Failed to lookup address %s: %s", ipSrc, err)
 			} else {
@@ -156,7 +156,7 @@ func hadnleIP4PairAgg(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prom
 		ipDst = netip.AddrFrom4(dst).String()
 
 		if !flags.SkipDNS {
-			addrs, err := net.LookupAddr(ipDst)
+			addrs, err := resolver.LookupAddr(context.Background(), ipDst)
 			if err != nil {
 				logrus.Infof("Failed to lookup address %s: %s", ipDst, err)
 			} else {
@@ -190,7 +190,7 @@ func handleIp6Pair(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prometh
 	ipSrc = netip.AddrFrom16(src).String()
 
 	if !flags.SkipDNS {
-		addrs, err := net.LookupAddr(ipSrc)
+		addrs, err := resolver.LookupAddr(context.Background(), ipSrc)
 
 		if err != nil {
 			logrus.Infof("Failed to lookup address %s: %s", ipSrc, err)
@@ -202,7 +202,7 @@ func handleIp6Pair(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prometh
 	ipDst = netip.AddrFrom16(dst).String()
 
 	if !flags.SkipDNS {
-		addrs, err := net.LookupAddr(netip.AddrFrom16(dst).String())
+		addrs, err := resolver.LookupAddr(context.Background(), ipDst)
 
 		if err != nil {
 			logrus.Infof("Failed to lookup address %s: %s", netip.AddrFrom16(dst).String(), err)
@@ -240,7 +240,7 @@ func hadnleIP6PairAgg(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prom
 		ipSrc = netip.AddrFrom16(src).String()
 
 		if !flags.SkipDNS {
-			addrs, err := net.LookupAddr(ipSrc)
+			addrs, err := resolver.LookupAddr(context.Background(), ipSrc)
 
 			if err != nil {
 				logrus.Infof("Failed to lookup address %s: %s", ipSrc, err)
@@ -257,7 +257,7 @@ func hadnleIP6PairAgg(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prom
 		ipDst = netip.AddrFrom16(dst).String()
 
 		if !flags.SkipDNS {
-			addrs, err := net.LookupAddr(netip.AddrFrom16(dst).String())
+			addrs, err := resolver.LookupAddr(context.Background(), ipDst)
 
 			if err != nil {
 				logrus.Infof("Failed to lookup address %s: %s", netip.AddrFrom16(dst).String(), err)

@@ -4,6 +4,10 @@ import (
 	"github.com/spf13/pflag"
 )
 
+var (
+	flags *Flags
+)
+
 type Flags struct {
 	InterfaceName string
 	LogLevel      string
