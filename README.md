@@ -132,6 +132,15 @@ Example `config.json` file:
 
 Metrics will be available at `http://localhost:2112/metrics` for Prometheus scraping.
 
+## Grafana Dashboard
+
+It is available [here](grafana/trafficmon.json) and by dashboard ID `22901`
+
+![Grafana Screenshot](assets/grafana.png "Grafana")
+![Grafana Screenshot 1](assets/grafana1.png "Grafana")
+![Grafana Screenshot 2](assets/grafana2.png "Grafana")
+![Grafana Screenshot 3](assets/grafana3.png "Grafana")
+
 ## Docker
 
 A `Dockerfile` is provided for building and running `texporter` in a containerized environment.
@@ -298,10 +307,6 @@ texporter_captured_bytes_total{dst="local",src="local"} 40460
 texporter_captured_bytes_total{dst="youtube",src="local"} 504
 ```
 
-## Grafana
-
-![Grafana Screenshot](assets/grafana.png "Grafana")
-
 ## Contribution
 
 Contributions are welcome! Feel free to open an issue or submit a pull request.
@@ -309,6 +314,10 @@ Contributions are welcome! Feel free to open an issue or submit a pull request.
 ## License
 
 `texporter` is licensed under the [Apache License Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
+## Project support
+
+If you liked the project feel free to subscribe to my [Patreon](https://www.patreon.com/c/kas_p)
 
 ## Stargazers over time
 
