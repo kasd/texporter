@@ -40,8 +40,28 @@ func init() {
 	flags = ParseFlags()
 }
 
-func captureTraffic(ifn string) int {
-	// Remove resource limits for kernels <5.11.
+func main() {
+
+	lvl, err := logrus.ParseLevel(flags.LogLevel)
+	if err == nil {
+		logrus.SetLevel(logrus.Level(lvl))
+	}
+
+	ifn := flags.InterfaceName
+
+	// Start HTTP server for Prometheus metrics
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+
+		bindAddress := flags.BindAddress
+
+		if bindAddress == "" {
+			bindAddress = fmt.Sprintf(":%s", flags.Port)
+		}
+
+		logrus.Fatal(http.ListenAndServe(bindAddress, nil))
+	}()
+
 	if err := rlimit.RemoveMemlock(); err != nil {
 		logrus.Fatal("Removing memlock:", err)
 	}
@@ -51,7 +71,7 @@ func captureTraffic(ifn string) int {
 
 	if err := loadCntObjects(&objs, nil); err != nil {
 		logrus.Fatal("Loading eBPF objects:", err)
-		return -1
+		os.Exit(-1)
 	}
 	defer objs.Close()
 
@@ -60,7 +80,7 @@ func captureTraffic(ifn string) int {
 	iface, err := net.InterfaceByName(ifn)
 	if err != nil {
 		logrus.Fatalf("Getting interface %s: %s", ifn, err)
-		return -1
+		os.Exit(-1)
 	}
 
 	// Attach xdp to the network interface.
@@ -70,7 +90,7 @@ func captureTraffic(ifn string) int {
 	})
 	if err != nil {
 		logrus.Fatalf("Attaching XDP: %s", err)
-		return -1
+		os.Exit(-1)
 	}
 	defer iLink.Close()
 
@@ -100,31 +120,5 @@ func captureTraffic(ifn string) int {
 
 	<-stopper
 
-	return 0
-}
-
-func main() {
-
-	lvl, err := logrus.ParseLevel(flags.LogLevel)
-	if err == nil {
-		logrus.SetLevel(logrus.Level(lvl))
-	}
-
-	ifn := flags.InterfaceName
-
-	// Start HTTP server for Prometheus metrics
-	go func() {
-		http.Handle("/metrics", promhttp.Handler())
-
-		bindAddress := flags.BindAddress
-
-		if bindAddress == "" {
-			bindAddress = fmt.Sprintf(":%s", flags.Port)
-		}
-
-		logrus.Fatal(http.ListenAndServe(bindAddress, nil))
-	}()
-
-	// Start capturing traffic
-	os.Exit(captureTraffic(ifn))
+	os.Exit(0)
 }
