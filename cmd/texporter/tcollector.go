@@ -42,14 +42,22 @@ type trafficmonCollector struct {
 }
 
 func newTrafficmonCollector() *trafficmonCollector {
+	var labels []string
+
+	if flags.SkipDNS {
+		labels = []string{"src", "dst"}
+	} else {
+		labels = []string{"src", "dst", "src_display", "dst_display"}
+	}
+
 	return &trafficmonCollector{
 		trafficMonCapturedBytes: prometheus.NewDesc("texporter_captured_bytes_total",
 			"The total number of bytes captured by texporter",
-			[]string{"src", "dst"}, nil,
+			labels, nil,
 		),
 		trafficMon6CapturedBytes: prometheus.NewDesc("texporter_captured_ipv6_bytes_total",
 			"The total number of bytes captured by texporter IPv6",
-			[]string{"src", "dst"}, nil,
+			labels, nil,
 		),
 	}
 }
@@ -68,10 +76,12 @@ func (collector *trafficmonCollector) Collect(ch chan<- prometheus.Metric) {
 
 func handleIp4Pair(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prometheus.Metric, key cntIp4PairAddrKey, val cntIp4PairValue) {
 	var (
-		src   [4]byte
-		dst   [4]byte
-		ipSrc string
-		ipDst string
+		src       [4]byte
+		dst       [4]byte
+		ipSrc     string
+		ipSrcDisp string = ""
+		ipDst     string
+		ipDstDisp string = ""
 	)
 
 	defer wg.Done()
@@ -79,39 +89,43 @@ func handleIp4Pair(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prometh
 	binary.LittleEndian.PutUint32(src[:], key.Src)
 	binary.LittleEndian.PutUint32(dst[:], key.Dst)
 
-	if flags.SkipDNS {
-		ipSrc = netip.AddrFrom4(src).String()
-	} else {
-		addrs, err := net.LookupAddr(netip.AddrFrom4(src).String())
+	ipSrc = netip.AddrFrom4(src).String()
+
+	if !flags.SkipDNS {
+		addrs, err := net.LookupAddr(ipSrc)
 		if err != nil {
-			logrus.Infof("Failed to lookup address %s: %s", netip.AddrFrom4(src).String(), err)
-			ipSrc = netip.AddrFrom4(src).String()
+			logrus.Infof("Failed to lookup address %s: %s", ipSrc, err)
 		} else {
-			ipSrc = addrs[0]
+			ipSrcDisp = addrs[0]
 		}
 	}
 
-	if flags.SkipDNS {
-		ipDst = netip.AddrFrom4(dst).String()
-	} else {
-		addrs, err := net.LookupAddr(netip.AddrFrom4(dst).String())
+	ipDst = netip.AddrFrom4(dst).String()
+
+	if !flags.SkipDNS {
+		addrs, err := net.LookupAddr(ipDst)
 		if err != nil {
-			logrus.Infof("Failed to lookup address %s: %s", netip.AddrFrom4(dst).String(), err)
-			ipDst = netip.AddrFrom4(dst).String()
+			logrus.Infof("Failed to lookup address %s: %s", ipDst, err)
 		} else {
-			ipDst = addrs[0]
+			ipDstDisp = addrs[0]
 		}
 	}
 
-	ch <- prometheus.MustNewConstMetric(c.trafficMonCapturedBytes, prometheus.CounterValue, float64(val.Bytes), ipSrc, ipDst)
+	if !flags.SkipDNS {
+		ch <- prometheus.MustNewConstMetric(c.trafficMonCapturedBytes, prometheus.CounterValue, float64(val.Bytes), ipSrc, ipDst, ipSrcDisp, ipDstDisp)
+	} else {
+		ch <- prometheus.MustNewConstMetric(c.trafficMonCapturedBytes, prometheus.CounterValue, float64(val.Bytes), ipSrc, ipDst)
+	}
 }
 
 func hadnleIP4PairAgg(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prometheus.Metric, key cntIp4PairAddrValue, val cntIp4PairValue) {
 	var (
-		src   [4]byte
-		dst   [4]byte
-		ipSrc string
-		ipDst string
+		src       [4]byte
+		dst       [4]byte
+		ipSrc     string
+		ipSrcDisp string = ""
+		ipDst     string
+		ipDstDisp string = ""
 	)
 
 	defer wg.Done()
@@ -121,18 +135,17 @@ func hadnleIP4PairAgg(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prom
 	} else {
 		binary.LittleEndian.PutUint32(src[:], key.Addrs.Src)
 
-		if flags.SkipDNS {
-			ipSrc = netip.AddrFrom4(src).String()
-		} else {
+		ipSrc = netip.AddrFrom4(src).String()
 
-			addrs, err := net.LookupAddr(netip.AddrFrom4(src).String())
+		if !flags.SkipDNS {
+			addrs, err := net.LookupAddr(ipSrc)
 			if err != nil {
-				logrus.Infof("Failed to lookup address %s: %s", netip.AddrFrom4(src).String(), err)
-				ipSrc = netip.AddrFrom4(src).String()
+				logrus.Infof("Failed to lookup address %s: %s", ipSrc, err)
 			} else {
-				ipSrc = addrs[0]
+				ipSrcDisp = addrs[0]
 			}
 		}
+
 	}
 
 	if key.Flags&FLAG_DST_I == FLAG_DST_I {
@@ -140,28 +153,33 @@ func hadnleIP4PairAgg(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prom
 	} else {
 		binary.LittleEndian.PutUint32(dst[:], key.Addrs.Dst)
 
-		if flags.SkipDNS {
-			ipDst = netip.AddrFrom4(dst).String()
-		} else {
-			addrs, err := net.LookupAddr(netip.AddrFrom4(dst).String())
+		ipDst = netip.AddrFrom4(dst).String()
+
+		if !flags.SkipDNS {
+			addrs, err := net.LookupAddr(ipDst)
 			if err != nil {
-				logrus.Infof("Failed to lookup address %s: %s", netip.AddrFrom4(dst).String(), err)
-				ipDst = netip.AddrFrom4(dst).String()
+				logrus.Infof("Failed to lookup address %s: %s", ipDst, err)
 			} else {
-				ipDst = addrs[0]
+				ipDstDisp = addrs[0]
 			}
 		}
 	}
 
-	ch <- prometheus.MustNewConstMetric(c.trafficMonCapturedBytes, prometheus.CounterValue, float64(val.Bytes), ipSrc, ipDst)
+	if !flags.SkipDNS {
+		ch <- prometheus.MustNewConstMetric(c.trafficMonCapturedBytes, prometheus.CounterValue, float64(val.Bytes), ipSrc, ipDst, ipSrcDisp, ipDstDisp)
+	} else {
+		ch <- prometheus.MustNewConstMetric(c.trafficMonCapturedBytes, prometheus.CounterValue, float64(val.Bytes), ipSrc, ipDst)
+	}
 }
 
 func handleIp6Pair(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prometheus.Metric, key cntIp6PairAddrKey, val cntIp6PairValue) {
 	var (
-		src   [16]byte
-		dst   [16]byte
-		ipSrc string
-		ipDst string
+		src       [16]byte
+		dst       [16]byte
+		ipSrc     string
+		ipSrcDisp string = ""
+		ipDst     string
+		ipDstDisp string = ""
 	)
 
 	defer wg.Done()
@@ -169,41 +187,45 @@ func handleIp6Pair(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prometh
 	copy(src[:], key.Src.In6U.U6Addr8[:])
 	copy(dst[:], key.Dst.In6U.U6Addr8[:])
 
-	if flags.SkipDNS {
-		ipSrc = netip.AddrFrom16(src).String()
-	} else {
-		addrs, err := net.LookupAddr(netip.AddrFrom16(src).String())
+	ipSrc = netip.AddrFrom16(src).String()
+
+	if !flags.SkipDNS {
+		addrs, err := net.LookupAddr(ipSrc)
 
 		if err != nil {
-			logrus.Infof("Failed to lookup address %s: %s", netip.AddrFrom16(src).String(), err)
-			ipSrc = netip.AddrFrom16(src).String()
+			logrus.Infof("Failed to lookup address %s: %s", ipSrc, err)
 		} else {
-			ipSrc = addrs[0]
+			ipSrcDisp = addrs[0]
 		}
 	}
 
-	if flags.SkipDNS {
-		ipDst = netip.AddrFrom16(dst).String()
-	} else {
+	ipDst = netip.AddrFrom16(dst).String()
+
+	if !flags.SkipDNS {
 		addrs, err := net.LookupAddr(netip.AddrFrom16(dst).String())
 
 		if err != nil {
 			logrus.Infof("Failed to lookup address %s: %s", netip.AddrFrom16(dst).String(), err)
-			ipDst = netip.AddrFrom16(dst).String()
 		} else {
-			ipDst = addrs[0]
+			ipDstDisp = addrs[0]
 		}
 	}
 
-	ch <- prometheus.MustNewConstMetric(c.trafficMon6CapturedBytes, prometheus.CounterValue, float64(val.Bytes), ipSrc, ipDst)
+	if !flags.SkipDNS {
+		ch <- prometheus.MustNewConstMetric(c.trafficMon6CapturedBytes, prometheus.CounterValue, float64(val.Bytes), ipSrc, ipDst, ipSrcDisp, ipDstDisp)
+	} else {
+		ch <- prometheus.MustNewConstMetric(c.trafficMon6CapturedBytes, prometheus.CounterValue, float64(val.Bytes), ipSrc, ipDst)
+	}
 }
 
 func hadnleIP6PairAgg(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prometheus.Metric, key cntIp6PairAddrValue, val cntIp6PairValue) {
 	var (
-		src   [16]byte
-		dst   [16]byte
-		ipSrc string
-		ipDst string
+		src       [16]byte
+		dst       [16]byte
+		ipSrc     string
+		ipSrcDisp string = ""
+		ipDst     string
+		ipDstDisp string = ""
 	)
 
 	defer wg.Done()
@@ -215,16 +237,15 @@ func hadnleIP6PairAgg(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prom
 		srcIdx := binary.LittleEndian.Uint32(key.Addrs.Src.In6U.U6Addr8[0:4])
 		ipSrc = IpRanges[srcIdx].Name
 	} else {
-		if flags.SkipDNS {
-			ipSrc = netip.AddrFrom16(src).String()
-		} else {
-			addrs, err := net.LookupAddr(netip.AddrFrom16(src).String())
+		ipSrc = netip.AddrFrom16(src).String()
+
+		if !flags.SkipDNS {
+			addrs, err := net.LookupAddr(ipSrc)
 
 			if err != nil {
-				logrus.Infof("Failed to lookup address %s: %s", netip.AddrFrom16(src).String(), err)
-				ipSrc = netip.AddrFrom16(src).String()
+				logrus.Infof("Failed to lookup address %s: %s", ipSrc, err)
 			} else {
-				ipSrc = addrs[0]
+				ipSrcDisp = addrs[0]
 			}
 		}
 	}
@@ -233,21 +254,24 @@ func hadnleIP6PairAgg(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prom
 		dstIdx := binary.LittleEndian.Uint32(key.Addrs.Src.In6U.U6Addr8[0:4])
 		ipDst = IpRanges[dstIdx].Name
 	} else {
-		if flags.SkipDNS {
-			ipDst = netip.AddrFrom16(dst).String()
-		} else {
+		ipDst = netip.AddrFrom16(dst).String()
+
+		if !flags.SkipDNS {
 			addrs, err := net.LookupAddr(netip.AddrFrom16(dst).String())
 
 			if err != nil {
 				logrus.Infof("Failed to lookup address %s: %s", netip.AddrFrom16(dst).String(), err)
-				ipDst = netip.AddrFrom16(dst).String()
 			} else {
-				ipDst = addrs[0]
+				ipDstDisp = addrs[0]
 			}
 		}
 	}
 
-	ch <- prometheus.MustNewConstMetric(c.trafficMon6CapturedBytes, prometheus.CounterValue, float64(val.Bytes), ipSrc, ipDst)
+	if !flags.SkipDNS {
+		ch <- prometheus.MustNewConstMetric(c.trafficMon6CapturedBytes, prometheus.CounterValue, float64(val.Bytes), ipSrc, ipDst, ipSrcDisp, ipDstDisp)
+	} else {
+		ch <- prometheus.MustNewConstMetric(c.trafficMon6CapturedBytes, prometheus.CounterValue, float64(val.Bytes), ipSrc, ipDst)
+	}
 }
 
 func processCounters(c *trafficmonCollector, ch chan<- prometheus.Metric) {
