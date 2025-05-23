@@ -251,7 +251,7 @@ func hadnleIP6PairAgg(wg *sync.WaitGroup, c *trafficmonCollector, ch chan<- prom
 	}
 
 	if key.Flags&FLAG_DST_I == FLAG_DST_I {
-		dstIdx := binary.LittleEndian.Uint32(key.Addrs.Src.In6U.U6Addr8[0:4])
+		dstIdx := binary.LittleEndian.Uint32(key.Addrs.Dst.In6U.U6Addr8[0:4])
 		ipDst = IpRanges[dstIdx].Name
 	} else {
 		ipDst = netip.AddrFrom16(dst).String()
