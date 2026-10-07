@@ -84,11 +84,26 @@ func main() {
 		os.Exit(-1)
 	}
 
-	// Attach xdp to the network interface.
+	// Attach xdp to the network interface. Native/driver mode (the default) is fastest, but is
+	// unavailable on some interfaces (e.g. veth in nested containers / Kubernetes pods), where the
+	// kernel returns ERANGE. In that case fall back to generic/SKB mode, which works on any netdev.
+	var xdpFlags link.XDPAttachFlags
+	if flags.XDPMode == "generic" {
+		xdpFlags = link.XDPGenericMode
+	}
 	iLink, err := link.AttachXDP(link.XDPOptions{
 		Program:   objs.CntXdpProgFunc,
 		Interface: iface.Index,
+		Flags:     xdpFlags,
 	})
+	if err != nil && xdpFlags == 0 {
+		logrus.Warnf("Native XDP attach failed (%s); retrying in generic/SKB mode", err)
+		iLink, err = link.AttachXDP(link.XDPOptions{
+			Program:   objs.CntXdpProgFunc,
+			Interface: iface.Index,
+			Flags:     link.XDPGenericMode,
+		})
+	}
 	if err != nil {
 		logrus.Fatalf("Attaching XDP: %s", err)
 		os.Exit(-1)

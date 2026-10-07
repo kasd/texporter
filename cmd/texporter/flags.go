@@ -15,6 +15,7 @@ type Flags struct {
 	Port          string
 	BindAddress   string
 	SkipDNS       bool
+	XDPMode       string
 }
 
 func ParseFlags() *Flags {
@@ -26,6 +27,7 @@ func ParseFlags() *Flags {
 	pflag.StringVarP(&flags.BindAddress, "bind-address", "b", "", "Bind address")
 	pflag.StringVarP(&flags.Port, "port", "p", "2112", "Port to listen to")
 	pflag.BoolVarP(&flags.SkipDNS, "skip-dns", "n", false, "Skip reverse DNS lookups")
+	pflag.StringVarP(&flags.XDPMode, "xdp-mode", "x", "native", "XDP attach mode: native|generic (use generic on veth / k8s pods; native falls back to generic automatically)")
 
 	pflag.Parse()
 
